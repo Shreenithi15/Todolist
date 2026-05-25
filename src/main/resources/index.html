@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Todo App</title>
+
+    <style>
+
+        body{
+            font-family: Arial;
+            margin: 40px;
+            background-color: #f4f4f4;
+        }
+
+        h1{
+            color: #333;
+        }
+
+        input{
+            padding: 10px;
+            width: 300px;
+        }
+
+        button{
+            padding: 10px;
+            margin-left: 5px;
+            cursor: pointer;
+        }
+
+        li{
+            margin: 10px 0;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            list-style: none;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <h1>Todo List</h1>
+
+    <input type="text" id="taskInput" placeholder="Enter Task">
+
+    <button onclick="addTask()">Add</button>
+
+    <ul id="taskList"></ul>
+
+    <script>
+
+        const apiUrl = "http://localhost:8081/tasks";
+
+        // VIEW TASKS
+        async function loadTasks(){
+
+            const response = await fetch(apiUrl);
+
+            const tasks = await response.json();
+
+            const taskList = document.getElementById("taskList");
+
+            taskList.innerHTML = "";
+
+            tasks.forEach(task => {
+
+                const li = document.createElement("li");
+
+                li.innerHTML = `
+                    ${task.task}
+
+                    <button onclick="deleteTask(${task.id})">
+                        Delete
+                    </button>
+                `;
+
+                taskList.appendChild(li);
+
+            });
+
+        }
+
+        // ADD TASK
+        async function addTask(){
+
+            const taskInput = document.getElementById("taskInput");
+
+            const taskText = taskInput.value;
+
+            if(taskText === ""){
+                alert("Enter a task");
+                return;
+            }
+
+            await fetch(apiUrl, {
+
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    task: taskText
+                })
+
+            });
+
+            taskInput.value = "";
+
+            loadTasks();
+
+        }
+
+        // DELETE TASK
+        async function deleteTask(id){
+
+            await fetch(`${apiUrl}/${id}`, {
+
+                method: "DELETE"
+
+            });
+
+            loadTasks();
+
+        }
+
+        loadTasks();
+
+    </script>
+
+</body>
+</html>
